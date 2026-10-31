@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f2ec">
+  <title>Link Lens | EWB Phishing URL Awareness Checker</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3f2ec;
+      --surface: #fffefa;
+      --ink: #1d2926;
+      --muted: #65716c;
+      --line: #d7d9d0;
+      --green: #164c3c;
+      --lime: #d8f16a;
+      --red: #bd4436;
+      --red-pale: #fae7e1;
+      --blue: #315eb7;
+      --blue-pale: #e7eefb;
+      --yellow: #f0c84b;
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: "Segoe UI", Tahoma, sans-serif;
+      --mono: Consolas, "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: linear-gradient(rgba(29, 41, 38, .035) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(29, 41, 38, .035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      font-family: var(--sans);
+    }
+
+    button, textarea { font: inherit; }
+    button:focus-visible, textarea:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 22px 34px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      aspect-ratio: 1;
+      place-items: center;
+      color: var(--lime);
+      background: var(--green);
+      font: 700 12px var(--mono);
+    }
+    .brand-name { font: 700 13px var(--mono); letter-spacing: 0; }
+    .privacy-mark {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--green);
+      font: 700 11px var(--mono);
+      text-transform: uppercase;
+    }
+    .privacy-mark::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #64a65d;
+      content: "";
+    }
+
+    main { max-width: 1240px; margin: 0 auto; padding: 62px 34px 72px; }
+    .intro { max-width: 790px; margin-bottom: 40px; animation: arrive .55s ease-out both; }
+    .eyebrow, .section-kicker {
+      margin: 0 0 13px;
+      color: var(--blue);
+      font: 700 11px var(--mono);
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 740px;
+      margin: 0;
+      font: 400 clamp(38px, 5vw, 64px)/1.02 var(--serif);
+    }
+    h1 span { color: var(--green); font-style: italic; }
+    .lede { max-width: 580px; margin: 18px 0 0; color: var(--muted); font-size: 15px; line-height: 1.65; }
+
+    .workbench {
+      display: grid;
+      grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+      border: 1px solid #c9cec4;
+      background: var(--surface);
+      box-shadow: 8px 8px 0 rgba(22, 76, 60, .12);
+      animation: arrive .65s .08s ease-out both;
+    }
+    .input-panel, .result-panel { min-width: 0; padding: 30px; }
+    .input-panel { border-right: 1px solid var(--line); }
+    .panel-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    h2 { margin: 0; font: 400 25px var(--serif); }
+    .step { color: var(--muted); font: 11px var(--mono); }
+    label { display: block; margin-bottom: 9px; font-size: 12px; font-weight: 700; }
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 148px;
+      resize: vertical;
+      padding: 15px;
+      border: 1px solid #aeb8b0;
+      border-radius: 0;
+      color: var(--ink);
+      background: #fbfcf7;
+      font: 13px/1.6 var(--mono);
+    }
+    textarea::placeholder { color: #89928c; }
+    .input-meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; color: var(--muted); font: 11px var(--mono); }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 22px; }
+    .primary, .secondary {
+      min-height: 44px;
+      padding: 0 16px;
+      border: 1px solid var(--green);
+      border-radius: 0;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background-color .16s ease, color .16s ease, transform .16s ease;
+    }
+    .primary { color: white; background: var(--green); }
+    .primary:hover { color: var(--green); background: var(--lime); transform: translateY(-1px); }
+    .primary:disabled { cursor: wait; opacity: .7; }
+    .secondary { color: var(--green); background: transparent; }
+    .secondary:hover { background: #edf2e8; }
+    .privacy-note { margin: 28px 0 0; padding-top: 17px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .privacy-note strong { color: var(--ink); }
+
+    .result-panel { background: #fbfcf7; }
+    .result-topline { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+    .result-topline .section-kicker { margin: 0; }
+    .status-tag { color: var(--muted); font: 11px var(--mono); }
+    .empty-state {
+      display: flex;
+      min-height: 255px;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      border-top: 1px solid var(--line);
+    }
+    .empty-symbol {
+      display: grid;
+      width: 46px;
+      aspect-ratio: 1;
+      place-items: center;
+      margin-bottom: 18px;
+      color: var(--green);
+      border: 1px solid #aab9ae;
+      font: 20px var(--serif);
+    }
+    .empty-state h3 { margin: 0 0 8px; font: 400 23px var(--serif); }
+    .empty-state p { max-width: 350px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .summary {
+      padding: 17px 18px;
+      border-left: 4px solid var(--red);
+      background: var(--red-pale);
+    }
+    .summary.clean { border-color: var(--green); background: #e8f1df; }
+    .summary h3 { margin: 0 0 7px; font: 400 23px var(--serif); }
+    .summary p { margin: 0; color: #414d47; font-size: 12px; line-height: 1.55; }
+    .facts { display: flex; flex-wrap: wrap; gap: 9px 22px; padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--muted); font: 11px var(--mono); }
+    .facts span { min-width: 0; overflow-wrap: anywhere; }
+    .facts strong { color: var(--ink); font-weight: 700; }
+    .warning-list { margin: 0; padding: 0; list-style: none; }
+    .warning-item { padding: 17px 0; border-bottom: 1px solid var(--line); }
+    .warning-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .warning-heading h4 { margin: 0; font: 700 14px/1.4 var(--sans); }
+    .severity { flex: 0 0 auto; padding: 4px 7px; color: #8c3027; background: #f6d5cd; font: 700 10px var(--mono); }
+    .severity.medium { color: #705600; background: #f8edbc; }
+    .finding { margin: 8px 0 4px; font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
+    .explanation { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .guidance { margin-top: 17px; padding: 14px 16px; border-left: 3px solid var(--yellow); background: #fff7da; }
+    .guidance strong { display: block; margin-bottom: 5px; font: 700 11px var(--mono); text-transform: uppercase; }
+    .guidance p { margin: 0; color: #565044; font-size: 12px; line-height: 1.55; }
+    .error-message { padding: 15px; border-left: 3px solid var(--red); background: var(--red-pale); font-size: 13px; line-height: 1.6; }
+    .result-content { animation: arrive .28s ease-out both; }
+    footer { display: flex; justify-content: space-between; gap: 16px; max-width: 1240px; margin: 0 auto; padding: 0 34px 24px; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+
+    @keyframes arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 760px) {
+      main { padding: 42px 20px 50px; }
+      .masthead { padding: 17px 20px; }
+      .workbench { grid-template-columns: 1fr; }
+      .input-panel { border-right: 0; border-bottom: 1px solid var(--line); }
+      .input-panel, .result-panel { padding: 23px 20px; }
+      .empty-state { min-height: 180px; }
+      footer { padding: 0 20px 20px; }
+    }
+    @media (max-width: 420px) {
+      .brand-name { font-size: 11px; }
+      .privacy-mark { gap: 6px; font-size: 9px; }
+      h1 { font-size: 39px; }
+      .panel-heading { align-items: flex-start; }
+      .step { padding-top: 5px; }
+      footer { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">EWB</div>
+      <div class="brand-name">PHISHING AWARENESS CHECKER</div>
+    </div>
+    <div class="privacy-mark">Local analysis</div>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">URL intelligence / offline</p>
+      <h1 id="page-title">Look closer at <span>the link.</span></h1>
+      <p class="lede">Inspect the visible structure of a URL for common phishing signals. Nothing you enter is sent to the destination or an external service.</p>
+    </section>
+
+    <section class="workbench" aria-label="URL analysis workspace">
+      <div class="input-panel">
+        <div class="panel-heading">
+          <h2>Inspect a URL</h2>
+          <span class="step">01 / INPUT</span>
+        </div>
+        <form id="checker-form">
+          <label for="url-input">Paste the complete URL or domain</label>
+          <textarea id="url-input" name="url" maxlength="10000" spellcheck="false" placeholder="https://example.com/account" required></textarea>
+          <div class="input-meta"><span>Text only. The destination is never opened.</span><span id="char-count">0 / 10,000</span></div>
+          <div class="actions">
+            <button class="primary" id="analyze-button" type="submit">Analyze URL <span aria-hidden="true">&rarr;</span></button>
+            <button class="secondary" id="sample-button" type="button">Load sample</button>
+            <button class="secondary" id="clear-button" type="button">Clear</button>
+          </div>
+        </form>
+        <p class="privacy-note"><strong>Local by design.</strong> The checker examines URL text only. It does not open links, query DNS, or verify whether a site is safe.</p>
+      </div>
+
+      <section class="result-panel" aria-labelledby="results-title">
+        <div class="result-topline">
+          <p class="section-kicker" id="results-title">02 / Findings</p>
+          <span class="status-tag" id="status-tag">READY</span>
+        </div>
+        <div id="results" aria-live="polite" aria-atomic="true">
+          <div class="empty-state">
+            <div class="empty-symbol" aria-hidden="true">↗</div>
+            <h3>Waiting for a link</h3>
+            <p>Your analysis will appear here, including the hostname and any surface-level warning signals.</p>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer><span>EWB / Awareness tools</span><span>Lexical analysis only · No destination checks</span></footer>
+
+  <script>
+    const form = document.querySelector("#checker-form");
+    const input = document.querySelector("#url-input");
+    const results = document.querySelector("#results");
+    const statusTag = document.querySelector("#status-tag");
+    const analyzeButton = document.querySelector("#analyze-button");
+    const charCount = document.querySelector("#char-count");
+    const sampleUrl = "http://security-alert.paypal.com@login.verify.update.portal.attacker-controlled-site.invalid/session/reset-credentials";
+
+    function makeElement(tag, className, text) {
+      const element = document.createElement(tag);
+      if (className) element.className = className;
+      if (text !== undefined) element.textContent = text;
+      return element;
+    }
+
+    function updateCount() {
+      charCount.textContent = `${input.value.length.toLocaleString()} / 10,000`;
+    }
+
+    function showError(message) {
+      statusTag.textContent = "ERROR";
+      results.replaceChildren(makeElement("p", "error-message", message));
+    }
+
+    function renderResult(result) {
+      if (result.is_empty || result.is_malformed) {
+        statusTag.textContent = result.status;
+        showError(result.error_message || "This URL could not be analyzed.");
+        return;
+      }
+
+      const hasWarnings = result.warning_count > 0;
+      statusTag.textContent = hasWarnings ? `${result.warning_count} SIGNAL${result.warning_count === 1 ? "" : "S"}` : "NO SIGNALS";
+      const content = makeElement("div", "result-content");
+      const summary = makeElement("div", `summary${hasWarnings ? "" : " clean"}`);
+      summary.append(makeElement("h3", "", hasWarnings ? "Review carefully" : "No common warnings"));
+      summary.append(makeElement("p", "", hasWarnings
+        ? `${result.warning_count} potential phishing indicator${result.warning_count === 1 ? "" : "s"} detected in the URL text.`
+        : "This URL did not match the surface-level warning patterns checked here. That does not prove it is safe."));
+      content.append(summary);
+
+      const facts = makeElement("div", "facts");
+      const hostname = makeElement("span");
+      hostname.append(document.createTextNode("HOST "));
+      hostname.append(makeElement("strong", "", result.hostname || "not specified"));
+      const length = makeElement("span");
+      length.append(document.createTextNode("LENGTH "));
+      length.append(makeElement("strong", "", `${result.url.length} chars`));
+      facts.append(hostname, length);
+      content.append(facts);
+
+      if (hasWarnings) {
+        const list = makeElement("ul", "warning-list");
+        for (const warning of result.warnings) {
+          const item = makeElement("li", "warning-item");
+          const heading = makeElement("div", "warning-heading");
+          heading.append(makeElement("h4", "", warning.name));
+          heading.append(makeElement("span", `severity${warning.severity === "MEDIUM" ? " medium" : ""}`, warning.severity));
+          item.append(heading);
+          item.append(makeElement("p", "finding", warning.finding));
+          item.append(makeElement("p", "explanation", warning.explanation));
+          list.append(item);
+        }
+        content.append(list);
+        const guidance = makeElement("div", "guidance");
+        guidance.append(makeElement("strong", "", "Defensive next step"));
+        guidance.append(makeElement("p", "", "Do not enter personal information. Verify the actual hostname through a trusted source, and treat unexpected links with caution."));
+        content.append(guidance);
+      }
+
+      results.replaceChildren(content);
+    }
+
+    input.addEventListener("input", updateCount);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      analyzeButton.disabled = true;
+      analyzeButton.textContent = "Analyzing...";
+      statusTag.textContent = "CHECKING";
+      try {
+        const response = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: input.value })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "The local analysis request failed.");
+        renderResult(result);
+      } catch (error) {
+        showError(error.message || "Could not reach the local checker.");
+      } finally {
+        analyzeButton.disabled = false;
+        analyzeButton.innerHTML = 'Analyze URL <span aria-hidden="true">&rarr;</span>';
+      }
+    });
+
+    document.querySelector("#sample-button").addEventListener("click", () => {
+      input.value = sampleUrl;
+      updateCount();
+      form.requestSubmit();
+    });
+
+    document.querySelector("#clear-button").addEventListener("click", () => {
+      input.value = "";
+      updateCount();
+      statusTag.textContent = "READY";
+      results.replaceChildren(makeElement("div", "empty-state"));
+      const empty = results.firstElementChild;
+      empty.append(makeElement("div", "empty-symbol", "↗"));
+      empty.append(makeElement("h3", "", "Waiting for a link"));
+      empty.append(makeElement("p", "", "Your analysis will appear here, including the hostname and any surface-level warning signals."));
+      input.focus();
+    });
+  </script>
+</body>
+</html>
